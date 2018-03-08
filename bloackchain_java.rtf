@@ -1,0 +1,434 @@
+{\rtf1\ansi\ansicpg1252\cocoartf1404\cocoasubrtf470
+{\fonttbl\f0\fnil\fcharset0 Calibri;\f1\froman\fcharset0 TimesNewRomanPSMT;}
+{\colortbl;\red255\green255\blue255;}
+\paperw11900\paperh16840\margl1440\margr1440\vieww10800\viewh8400\viewkind0
+\deftab708
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\f0\i\fs24 \cf0 public static String calculateHash(Block block) \{\
+  if (block != null) \{\
+    MessageDigest digest = null;\
+\
+    try \{\
+      digest = MessageDigest.getInstance("SHA-256");\
+    \} catch (NoSuchAlgorithmException e) \{\
+      return null;\
+    \}\
+\
+    String txt = block.str();\
+    final byte bytes[] = digest.digest(txt.getBytes());\
+    final StringBuilder builder = new StringBuilder();\
+\
+    for (final byte b : bytes) \{\
+      String hex = Integer.toHexString(0xff & b);\
+\
+      if (hex.length() == 1) \{\
+        builder.append('0');\
+      \}\
+\
+      builder.append(hex);\
+    \}\
+\
+    return builder.toString();\
+  
+\f1 \}\
+\
+
+\f0   return null;\
+\pard\pardeftab708\ri-52\sl276\slmult1\sa360\qj\partightenfactor0
+
+\f1 \cf0 \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\i0\b \cf0 \
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\f0\i\b0 \cf0 public void mineBlock(int difficulty) \{\
+  nonce = 0;\
+\
+  while (!getHash().substring(0,  difficulty).equals(Utils.zeros(difficulty))) \{\
+    nonce++;\
+    hash = Block.calculateHash(this);\
+  
+\f1 \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\sa200\qj\partightenfactor0
+\cf0 \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\i0 \cf0 \
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\f0\i \cf0 public class Utils \{\
+  public static String zeros(int length) \{\
+    StringBuilder builder = new StringBuilder();\
+\
+    for (int i = 0; i < length; i++) \{\
+      builder.append("0");\
+    \}\
+\
+    return builder.toString();\
+  
+\f1 \}	\
+\pard\pardeftab708\ri-52\sl276\slmult1\sa200\qj\partightenfactor0
+\cf0 \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\partightenfactor0
+
+\i0\b \cf0 \
+\pard\pardeftab708\ri-52\sl276\slmult1\partightenfactor0
+
+\f0\i\b0 \cf0 import java.security.MessageDigest;\
+import java.security.NoSuchAlgorithmException;\
+import java.util.Date;\
+\
+public class Block \{\
+\
+  private int index;\
+  private long timestamp;\
+  private String hash;\
+  private String previousHash;\
+  private String data;\
+  private int nonce;\
+	\
+  public Block(int index, long timestamp, String previousHash, String data) \{\
+    this.index = index;\
+    this.timestamp = timestamp;\
+    this.previousHash = previousHash;\
+    this.data = data;\
+    nonce = 0;\
+    hash = Block.calculateHash(this);\
+  \}\
+\
+  public int getIndex() \{\
+    return index;\
+  \}\
+\
+  public long getTimestamp() \{\
+    return timestamp;\
+  \}\
+\
+  public String getHash() \{\
+    return hash;\
+  \}\
+\
+  public String getPreviousHash() \{\
+    return previousHash;\
+  \}\
+\
+  public String getData() \{\
+    return data;\
+  \}\
+\
+  public String str() \{\
+    return index + timestamp + previousHash + data + nonce;\
+  \}\
+\
+  public String toString() \{\
+    StringBuilder builder = new StringBuilder();\
+    builder.append("Block #").append(index).append(" [previousHash : ").append(previousHash).append(", ").\
+    append("timestamp : ").append(new Date(timestamp)).append(", ").append("data : ").append(data).append(", ").\
+    append("hash : ").append(hash).append("]");\
+    return builder.toString();\
+  \}\
+	\
+  public static String calculateHash(Block block) \{\
+    if (block != null) \{\
+      MessageDigest digest = null;\
+\
+      try \{\
+        digest = MessageDigest.getInstance("SHA-256");\
+      \} catch (NoSuchAlgorithmException e) \{\
+        return null;\
+      \}\
+			\
+      String txt = block.str();\
+      final byte bytes[] = digest.digest(txt.getBytes());\
+      final StringBuilder builder = new StringBuilder();\
+			\
+      for (final byte b : bytes) \{\
+        String hex = Integer.toHexString(0xff & b);\
+\
+        if (hex.length() == 1) \{\
+          builder.append('0');\
+        \}\
+				\
+        builder.append(hex);\
+      \}\
+			\
+      return builder.toString();\
+    \}\
+	  \
+    return null;\
+  \}\
+\
+   public void mineBlock(int difficulty) \{\
+     nonce = 0;\
+		\
+     while (!getHash().substring(0,  difficulty).equals(Utils.zeros(difficulty))) \{\
+       nonce++;\
+       hash = Block.calculateHash(this);\
+     
+\f1 \}\
+
+\f0   \}\
+	\
+\pard\pardeftab708\ri-52\sl276\slmult1\sa360\partightenfactor0
+
+\f1\i0 \cf0 \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\b \cf0 \
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\f0\i\b0 \cf0 public Block latestBlock() \{\
+  return blocks.get(blocks.size() - 1);\
+\}\
+\
+public Block newBlock(String data) \{\
+  Block latestBlock = latestBlock();\
+  return new Block(latestBlock.getIndex() + 1, System.currentTimeMillis(),\
+      latestBlock.getHash(), data);\
+\}\
+\
+public void addBlock(Block b) \{\
+  if (b != null) \{\
+    b.mineBlock(difficulty);\
+    blocks.add(b);\
+  \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\sa200\qj\partightenfactor0
+
+\f1 \cf0 \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\i0\b \cf0 \
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\f0\i\b0 \cf0 public boolean isFirstBlockValid() \{\
+  Block firstBlock = blocks.get(0);\
+\
+  if (firstBlock.getIndex() != 0) \{\
+    return false;\
+  \}\
+\
+  if (firstBlock.getPreviousHash() != null) \{\
+    return false;\
+  \}\
+\
+  if (firstBlock.getHash() == null || \
+      !Block.calculateHash(firstBlock).equals(firstBlock.getHash())) \{\
+    return false;\
+  \}\
+\
+  return true;\
+\}\
+\
+public boolean isValidNewBlock(Block newBlock, Block previousBlock) \{\
+  if (newBlock != null  &&  previousBlock != null) \{\
+    if (previousBlock.getIndex() + 1 != newBlock.getIndex()) \{\
+      return false;\
+    \}\
+\
+    if (newBlock.getPreviousHash() == null  || \
+        !newBlock.getPreviousHash().equals(previousBlock.getHash())) \{\
+      return false;\
+    \}\
+\
+    if (newBlock.getHash() == null  ||  \
+        !Block.calculateHash(newBlock).equals(newBlock.getHash())) \{\
+      return false;\
+    \}\
+\
+    return true;\
+  \}\
+\
+  return false;\
+\}\
+\
+public boolean isBlockChainValid() \{\
+  if (!isFirstBlockValid()) \{\
+    return false;\
+  \}\
+\
+  for (int i = 1; i < blocks.size(); i++) \{\
+    Block currentBlock = blocks.get(i);\
+    Block previousBlock = blocks.get(i - 1);\
+\
+    if (!isValidNewBlock(currentBlock, previousBlock)) \{\
+      return false;\
+    
+\f1 \}\
+
+\f0   \}\
+\
+  return true;\
+\pard\pardeftab708\ri-52\sl276\slmult1\sa200\qj\partightenfactor0
+
+\f1\i0 \cf0 \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\b \cf0 \
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\f0\i\b0 \cf0 import java.util.ArrayList;\
+import java.util.List;\
+\
+public class Blockchain \{\
+\
+  private int difficulty;\
+  private List<Block> blocks;\
+\
+  public Blockchain(int difficulty) \{\
+    this.difficulty = difficulty;\
+    blocks = new ArrayList<>();\
+    // create the first block\
+    Block b = new Block(0, System.currentTimeMillis(), null, "First Block");\
+    b.mineBlock(difficulty);\
+    blocks.add(b);\
+  \}\
+\
+  public int getDifficulty() \{\
+    return difficulty;\
+  \}\
+\
+  public Block latestBlock() \{\
+    return blocks.get(blocks.size() - 1);\
+  \}\
+\
+  public Block newBlock(String data) \{\
+    Block latestBlock = latestBlock();\
+    return new Block(latestBlock.getIndex() + 1, System.currentTimeMillis(),\
+        latestBlock.getHash(), data);\
+  \}\
+\
+  public void addBlock(Block b) \{\
+    if (b != null) \{\
+      b.mineBlock(difficulty);\
+      blocks.add(b);\
+    \}\
+  \}\
+\
+  public boolean isFirstBlockValid() \{\
+    Block firstBlock = blocks.get(0);\
+\
+    if (firstBlock.getIndex() != 0) \{\
+      return false;\
+    \}\
+\
+    if (firstBlock.getPreviousHash() != null) \{\
+      return false;\
+    \}\
+\
+    if (firstBlock.getHash() == null || \
+          !Block.calculateHash(firstBlock).equals(firstBlock.getHash())) \{\
+      return false;\
+    \}\
+\
+    return true;\
+  \}\
+\
+  public boolean isValidNewBlock(Block newBlock, Block previousBlock) \{\
+    if (newBlock != null  &&  previousBlock != null) \{\
+      if (previousBlock.getIndex() + 1 != newBlock.getIndex()) \{\
+        return false;\
+      \}\
+\
+      if (newBlock.getPreviousHash() == null  ||  \
+	    !newBlock.getPreviousHash().equals(previousBlock.getHash())) \{\
+        return false;\
+      \}\
+\
+      if (newBlock.getHash() == null  ||  \
+	    !Block.calculateHash(newBlock).equals(newBlock.getHash())) \{\
+        return false;\
+      \}\
+\
+      return true;\
+    \}\
+\
+    return false;\
+  \}\
+\
+  public boolean isBlockChainValid() \{\
+    if (!isFirstBlockValid()) \{\
+      return false;\
+    \}\
+\
+    for (int i = 1; i < blocks.size(); i++) \{\
+      Block currentBlock = blocks.get(i);\
+      Block previousBlock = blocks.get(i - 1);\
+\
+      if (!isValidNewBlock(currentBlock, previousBlock)) \{\
+        return false;\
+      
+\f1 \}\
+
+\f0     \}\
+\
+    return true;\
+  \}\
+\
+  public String toString() \{\
+    StringBuilder builder = new StringBuilder();\
+\
+    for (Block block : blocks) \{\
+      builder.append(block).append("\\n");\
+    
+\f1 \}\
+\
+
+\f0     return builder.toString();\
+  \}
+\f1 \
+\pard\pardeftab708\ri-52\sl276\slmult1\sa360\qj\partightenfactor0
+
+\i0 \cf0 \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\b \cf0 \
+\pard\pardeftab708\ri-52\sl276\slmult1\qj\partightenfactor0
+
+\f0\i\b0 \cf0 public class Main \{\
+\
+  public static void main(String[] args) \{\
+    Blockchain blockchain = new Blockchain(4);\
+    blockchain.addBlock(blockchain.newBlock("SSaurel's Blog"));\
+    blockchain.addBlock(blockchain.newBlock("Sylvain Saurel"));\
+    blockchain.addBlock(blockchain.newBlock("https://www.ssaurel.com/blog"));\
+  \
+    System.out.println("Blockchain valid ? " + blockchain.isBlockChainValid());\
+    System.out.println(blockchain);\
+  
+\f1 \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\sa200\qj\partightenfactor0
+\cf0 \
+\}
+\i0 \
+\pard\pardeftab708\ri-52\sl276\slmult1\sa200\qj\partightenfactor0
+
+\f0\i \cf0 public class Main \{\
+\pard\pardeftab708\ri-52\sl276\slmult1\partightenfactor0
+
+\f1 \cf0 \
+\pard\pardeftab708\ri-52\sl276\slmult1\partightenfactor0
+
+\f0 \cf0   public static void main(String[] args) \{\
+    Blockchain blockchain = new Blockchain(4);\
+    blockchain.addBlock(blockchain.newBlock("SSaurel's Blog"));\
+    blockchain.addBlock(blockchain.newBlock("Sylvain Saurel"));\
+    blockchain.addBlock(blockchain.newBlock("https://www.ssaurel.com/blog"));\
+\
+    System.out.println("Blockchain valide ? " + blockchain.isBlockChainValid());\
+    System.out.println(blockchain);\
+\
+    // Ajout d\'92un bloc corrompu \'e0 notre Blockchain\
+    blockchain.addBlock(new Block(15, System.currentTimeMillis(), "aaaabbb", "Block invalide"));\
+\
+    System.out.println("Blockchain valide ? " + blockchain.isBlockChainValid());\
+  \}\
+	\
+\pard\pardeftab708\ri-52\sl276\slmult1\sa200\qj\partightenfactor0
+
+\f1\i0 \cf0 \}\
+\pard\pardeftab708\ri-52\sl276\slmult1\sa200\partightenfactor0
+
+\i \cf0 \
+}
